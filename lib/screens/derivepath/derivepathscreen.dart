@@ -16,6 +16,7 @@ class DerivePathScreen extends StatefulWidget {
 
 class _DerivePathScreenState extends State<DerivePathScreen> {
   bip32.BIP32 _derivedNode;
+  bool _neutered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +41,24 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
       return Container();
     }
 
-    return Expanded(child: Bip32NodeDisplay(node: node));
+    return Expanded(
+      child: Column(
+        children: <Widget>[
+          SwitchListTile(
+            title: Text('Neutered'),
+            value: _neutered,
+            onChanged: _toggleNeutered,
+          ),
+          Expanded(child: Bip32NodeDisplay(node: _neutered ? node.neutered() : node)),
+        ],
+      ),
+    );
+  }
+
+  void _toggleNeutered(bool val) {
+    setState(() {
+      _neutered = val;
+    });
   }
 
   void _onSave(String path) {
