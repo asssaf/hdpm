@@ -32,6 +32,7 @@ class _PathInputFormState extends State<PathInputForm> {
           TextFormField(
             decoration: InputDecoration(
               labelText: 'Derivation Path',
+              hintText: "m/0'/0/1",
             ),
             validator: (value) {
               if (value.isEmpty) {
