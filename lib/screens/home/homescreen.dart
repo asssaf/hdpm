@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: <Widget>[
               _buildSeedInputButton(),
               _buildDerivePathButton(),
-            ]
+            ],
           ),
         ),
       ),
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onPressed: _seed == null ? null : () {
         Navigator.pushNamed(context, Routes.derivePath, arguments: _seed);
       },
-      child: Text('Derive')
+      child: Text('Derive'),
     );
   }
 }

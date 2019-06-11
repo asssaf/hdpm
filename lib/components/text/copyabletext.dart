@@ -17,9 +17,9 @@ class CopyableText extends StatelessWidget {
         onPressed: () {
           Clipboard.setData(ClipboardData(text: title));
           Scaffold.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Copied"),
-              )
+            SnackBar(
+              content: Text("Copied"),
+            ),
           );
         },
       ),

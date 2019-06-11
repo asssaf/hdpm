@@ -25,31 +25,33 @@ class _PathInputFormState extends State<PathInputForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Derivation Path'),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  //TODO validate bip32 path
-                },
-                onSaved: (value) => setState(() => _path = value),
-              ),
-              Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                  child: RaisedButton(
-                      onPressed: () {
-                        save();
-                      },
-                      child: Text('Derive')
-                  )
-              ),
-            ]
-        )
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Derivation Path',
+            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Please enter some text';
+              }
+              //TODO validate bip32 path
+            },
+            onSaved: (value) => setState(() => _path = value),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+            child: RaisedButton(
+              onPressed: () {
+                save();
+              },
+              child: Text('Derive'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

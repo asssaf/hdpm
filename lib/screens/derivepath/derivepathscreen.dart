@@ -1,7 +1,7 @@
+import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/bip32node/bip32nodedisplay.dart';
 import 'package:hdpm/screens/derivepath/components/pathinputform.dart';
-import 'package:bip32/bip32.dart' as bip32;
 import 'package:hex/hex.dart';
 
 class DerivePathScreen extends StatefulWidget {
@@ -31,7 +31,7 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
             _derivedNode != null ? Bip32NodeDisplay(node: _derivedNode) : Container(),
           ],
         ),
-      ),//SeedInputForm(),
+      ), //SeedInputForm(),
     );
   }
 
@@ -42,23 +42,23 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
       setState(() {
         _derivedNode = child;
       });
-    } on ArgumentError catch(e) {
+    } on ArgumentError catch (e) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Invalid path'),
-            content: new Text(e.message),
+            content: Text(e.message),
             actions: <Widget>[
-              new FlatButton(
-                child: new Text("Close"),
+              FlatButton(
+                child: Text("Close"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
             ],
           );
-        }
+        },
       );
     }
   }

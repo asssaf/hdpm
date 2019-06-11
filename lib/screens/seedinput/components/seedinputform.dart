@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:flutter/material.dart';
 
 class SeedInputForm extends StatefulWidget {
   SeedInputForm({Key key, this.title, this.onSave}) : super(key: key);
@@ -48,7 +48,8 @@ class _SeedInputFormState extends State<SeedInputForm> {
               ),
             ),
             autofocus: true,
-            maxLines: null, // set to null to allow multiple lines
+            maxLines: null,
+            // set to null to allow multiple lines
             validator: (value) {
               if (value.isEmpty) {
                 return 'Please enter some text';
@@ -62,11 +63,11 @@ class _SeedInputFormState extends State<SeedInputForm> {
               onPressed: () {
                 save();
               },
-              child: Text('Next')
-            )
+              child: Text('Next'),
+            ),
           ),
-        ]
-      )
+        ],
+      ),
     );
   }
 }

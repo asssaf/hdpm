@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hdpm/screens/derivepath/derivepathscreen.dart';
 import 'package:hdpm/screens/home/homescreen.dart';
 import 'package:hdpm/screens/seedinput/seedinputscreen.dart';
-import 'package:hdpm/screens/derivepath/derivepathscreen.dart';
 
 class Routes {
   static const seedInput = "/seedinput";

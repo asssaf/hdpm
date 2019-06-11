@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:bip32/bip32.dart' as bip32;
+import 'package:flutter/material.dart';
 import 'package:hdpm/components/text/copyabletext.dart';
 
 class Bip32NodeDisplay extends StatefulWidget {
