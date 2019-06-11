@@ -37,9 +37,29 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
 
   void onSave(String path) {
     bip32.BIP32 nodeFromSeed = bip32.BIP32.fromSeed(HEX.decode(widget.seed));
-    bip32.BIP32 child = nodeFromSeed.derivePath(path);
-    setState(() {
-      _derivedNode = child;
-    });
+    try {
+      bip32.BIP32 child = nodeFromSeed.derivePath(path);
+      setState(() {
+        _derivedNode = child;
+      });
+    } on ArgumentError catch(e) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Invalid path'),
+            content: new Text(e.message),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("Close"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+      );
+    }
   }
 }
