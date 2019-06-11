@@ -27,15 +27,23 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
         child: Column(
           children: [
-            PathInputForm(onSave: onSave),
-            _derivedNode != null ? Bip32NodeDisplay(node: _derivedNode) : Container(),
+            PathInputForm(onSave: _onSave),
+            _buildNodeDisplay(_derivedNode),
           ],
         ),
       ), //SeedInputForm(),
     );
   }
 
-  void onSave(String path) {
+  Widget _buildNodeDisplay(bip32.BIP32 node) {
+    if (node == null) {
+      return Container();
+    }
+
+    return Expanded(child: Bip32NodeDisplay(node: node));
+  }
+
+  void _onSave(String path) {
     bip32.BIP32 nodeFromSeed = bip32.BIP32.fromSeed(HEX.decode(widget.seed));
     try {
       bip32.BIP32 child = nodeFromSeed.derivePath(path);
