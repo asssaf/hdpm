@@ -68,6 +68,9 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
       setState(() {
         _derivedNode = child;
       });
+
+      // hide keyboard so the key view is not obscured
+      FocusScope.of(context).requestFocus(new FocusNode());
     } on ArgumentError catch (e) {
       showDialog(
         context: context,
