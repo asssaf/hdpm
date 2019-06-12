@@ -1,4 +1,5 @@
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SeedInputForm extends StatefulWidget {
@@ -14,19 +15,27 @@ class SeedInputForm extends StatefulWidget {
 class _SeedInputFormState extends State<SeedInputForm> {
   final _formKey = GlobalKey<FormState>();
   String _mnemonic;
+  bool _processing = false;
 
-  void save() {
+  void _save() async {
     final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
+      setState(() {
+        _processing = true;
+      });
       print('mnemonic: $_mnemonic');
 
       //TODO warn if seed isn't valid but allow proceeding anyway
-      print('mnemonic: valid ${bip39.validateMnemonic(_mnemonic)}');
-      final seedHex = bip39.mnemonicToSeedHex(_mnemonic);
+      print('mnemonic valid: ${bip39.validateMnemonic(_mnemonic)}');
+      final seedHex = await compute(bip39.mnemonicToSeedHex, _mnemonic);
       print('seed: $seedHex');
 
       widget.onSave(seedHex);
+
+      setState(() {
+        _processing = false;
+      });
     }
   }
 
@@ -38,6 +47,7 @@ class _SeedInputFormState extends State<SeedInputForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
+            enabled: !_processing,
             decoration: InputDecoration(
               labelText: 'Seed',
               suffixIcon: IconButton(
@@ -60,9 +70,7 @@ class _SeedInputFormState extends State<SeedInputForm> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
             child: RaisedButton(
-              onPressed: () {
-                save();
-              },
+              onPressed: _processing ? null : _save,
               child: Text('Next'),
             ),
           ),
