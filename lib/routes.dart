@@ -4,18 +4,18 @@ import 'package:hdpm/screens/home/homescreen.dart';
 import 'package:hdpm/screens/seedinput/seedinputscreen.dart';
 
 class Routes {
-  static const seedInput = "/seedinput";
-  static const derivePath = "/derivepath";
+  static const seedInput = '/seedinput';
+  static const derivePath = '/derivepath';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (context) => HomeScreen(title: 'hdpm'));
+        return MaterialPageRoute(builder: (_) => HomeScreen(title: 'hdpm'));
       case Routes.seedInput:
-        return MaterialPageRoute(builder: (context) => SeedInputScreen(title: 'Seed Input'));
+        return MaterialPageRoute(builder: (_) => SeedInputScreen(title: 'Seed Input'));
       case Routes.derivePath:
         var seed = settings.arguments;
-        return MaterialPageRoute(builder: (context) => DerivePathScreen(title: 'Derive Path', seed: seed));
+        return MaterialPageRoute(builder: (_) => DerivePathScreen(title: 'Derive Path', seed: seed));
     }
   }
 }
