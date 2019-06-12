@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ class SeedInputForm extends StatefulWidget {
   SeedInputForm({Key key, this.title, this.onSave}) : super(key: key);
 
   final String title;
-  final ValueChanged<String> onSave;
+  final ValueChanged<Uint8List> onSave;
 
   @override
   _SeedInputFormState createState() => _SeedInputFormState();
@@ -24,14 +26,12 @@ class _SeedInputFormState extends State<SeedInputForm> {
       setState(() {
         _processing = true;
       });
-      print('mnemonic: $_mnemonic');
 
       //TODO warn if seed isn't valid but allow proceeding anyway
-      print('mnemonic valid: ${bip39.validateMnemonic(_mnemonic)}');
-      final seedHex = await compute(bip39.mnemonicToSeedHex, _mnemonic);
-      print('seed: $seedHex');
+      //print('mnemonic valid: ${bip39.validateMnemonic(_mnemonic)}');
+      final seed = await compute(bip39.mnemonicToSeed, _mnemonic);
 
-      widget.onSave(seedHex);
+      widget.onSave(seed);
 
       setState(() {
         _processing = false;

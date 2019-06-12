@@ -29,18 +29,21 @@ class _PathInputFormState extends State<PathInputForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: 'Derivation Path',
-              hintText: "m/0'/0/1",
+          ListTile(
+            title: TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Derivation Path',
+                hintText: "m/0'/0/1",
+              ),
+              autofocus: true,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                //TODO validate bip32 path
+              },
+              onSaved: (value) => setState(() => _path = value),
             ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter some text';
-              }
-              //TODO validate bip32 path
-            },
-            onSaved: (value) => setState(() => _path = value),
           ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),

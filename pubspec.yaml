@@ -26,6 +26,8 @@ dependencies:
 
   bip32: ^1.0.5
   bip39: ^1.0.3
+  logging: ^0.11.3
+  shared_preferences: ^0.5.3
 
 dev_dependencies:
   flutter_test:
