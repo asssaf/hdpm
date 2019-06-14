@@ -85,7 +85,7 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     //TODO argon2 would be better (side channel attack resistant) but not supported by pointycastle
     KeyDerivator derivator = Scrypt();
 
-    final N = 16384;
+    final N = 2048;
     final r = 8;
     final p = 1;
     final desiredKeySize = 32; // 32 byte key needed for aes256
