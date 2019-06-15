@@ -28,15 +28,12 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
         context: context,
         title: widget.title,
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-        child: Column(
-          children: [
-            SeedInfo(seed: bip32.BIP32.fromSeed(widget.seed)),
-            PathInputForm(onSave: _onSave),
-            _buildNodeDisplay(_derivedNode),
-          ],
-        ),
+      body: Column(
+        children: [
+          SeedInfo(seed: bip32.BIP32.fromSeed(widget.seed)),
+          PathInputForm(onSave: _onSave),
+          _buildNodeDisplay(_derivedNode),
+        ],
       ), //SeedInputForm(),
     );
   }

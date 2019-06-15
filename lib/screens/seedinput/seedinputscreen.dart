@@ -30,9 +30,17 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
         context: context,
         title: widget.title,
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-        child: SeedInputForm(onSave: _save),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: SeedInputForm(onSave: _save),
+            ),
+          );
+        },
       ),
     );
   }

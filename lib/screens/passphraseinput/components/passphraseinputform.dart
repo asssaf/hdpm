@@ -23,28 +23,30 @@ class _PassphraseInputState extends State<PassphraseInputForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextFormField(
-            enabled: widget.enabled,
-            decoration: InputDecoration(
-              labelText: 'Passphrase',
-              suffixIcon: IconButton(
-                icon: Icon(Icons.remove_red_eye),
-                onPressed: () {
-                  setState(() {
-                    _obscured = !_obscured;
-                  });
-                },
+          ListTile(
+            title: TextFormField(
+              enabled: widget.enabled,
+              decoration: InputDecoration(
+                labelText: 'Passphrase',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.remove_red_eye),
+                  onPressed: () {
+                    setState(() {
+                      _obscured = !_obscured;
+                    });
+                  },
+                ),
               ),
+              autofocus: true,
+              maxLines: null, // set to null to allow multiple lines
+              obscureText: _obscured,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter some text';
+                }
+              },
+              onSaved: (value) => setState(() => _passphrase = value),
             ),
-            autofocus: true,
-            maxLines: null, // set to null to allow multiple lines
-            obscureText: _obscured,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter some text';
-              }
-            },
-            onSaved: (value) => setState(() => _passphrase = value),
           ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),

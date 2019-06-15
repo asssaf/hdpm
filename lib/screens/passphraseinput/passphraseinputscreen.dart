@@ -42,9 +42,17 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
         title: widget.title,
         locked: true,
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-        child: PassphraseInputForm(onSave: _onSave, enabled: !_processing),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: PassphraseInputForm(onSave: _onSave, enabled: !_processing),
+            ),
+          );
+        },
       ),
     );
   }

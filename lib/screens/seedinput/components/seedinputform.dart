@@ -46,26 +46,28 @@ class _SeedInputFormState extends State<SeedInputForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextFormField(
-            enabled: !_processing,
-            decoration: InputDecoration(
-              labelText: 'Seed',
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  _formKey.currentState.reset();
-                },
+          ListTile(
+            title: TextFormField(
+              enabled: !_processing,
+              decoration: InputDecoration(
+                labelText: 'Seed',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _formKey.currentState.reset();
+                  },
+                ),
               ),
+              autofocus: true,
+              maxLines: null,
+              // set to null to allow multiple lines
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter some text';
+                }
+              },
+              onSaved: (value) => setState(() => _mnemonic = value),
             ),
-            autofocus: true,
-            maxLines: null,
-            // set to null to allow multiple lines
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter some text';
-              }
-            },
-            onSaved: (value) => setState(() => _mnemonic = value),
           ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
