@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/routes.dart';
@@ -45,15 +46,17 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
     );
   }
 
-  void _save(Uint8List seed) async {
+  void _save(Uint8List seedBytes) async {
     // store encrypted seed in SharedPreferences
-    final encryptedSeed = SeedEncryption().encrypt(widget.seedEncryptionKey, seed);
+    final encryptedSeed = SeedEncryption().encrypt(widget.seedEncryptionKey, seedBytes);
     SeedRepository().saveSeed(encryptedSeed);
+
+    final seed = BIP32.fromSeed(seedBytes);
 
     Navigator.pushNamedAndRemoveUntil(
       context,
       Routes.derivePath,
-      ModalRoute.withName(Routes.initial),
+      (_) => false,
       arguments: seed,
     );
   }

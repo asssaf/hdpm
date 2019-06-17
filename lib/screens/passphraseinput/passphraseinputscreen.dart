@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bip32/bip32.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
@@ -26,11 +27,11 @@ class PassphraseInputScreen extends StatefulWidget {
 
 class _PassphraseInputState extends State<PassphraseInputScreen> {
   bool _processing = false;
-  bool _loading = true;
   Uint8List _encryptedSeed;
 
   @override
   void initState() {
+    super.initState();
     _loadEncryptedSeed();
   }
 
@@ -62,7 +63,6 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
 
     setState(() {
       _encryptedSeed = encryptedSeed;
-      _loading = false;
     });
   }
 
@@ -84,7 +84,8 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     if (_encryptedSeed == null) {
       Navigator.pushNamed(context, Routes.seedInput, arguments: key);
     } else {
-      final seed = SeedEncryption().decrypt(key, _encryptedSeed);
+      final seedBytes = SeedEncryption().decrypt(key, _encryptedSeed);
+      final seed = BIP32.fromSeed(seedBytes);
       Navigator.pushNamedAndRemoveUntil(context, Routes.derivePath, (_) => false, arguments: seed);
     }
   }

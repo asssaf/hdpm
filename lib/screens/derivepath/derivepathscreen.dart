@@ -1,9 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/components/bip32node/bip32nodedisplay.dart';
+import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/derivepath/components/pathinputform.dart';
 import 'package:hdpm/screens/derivepath/components/seedinfo.dart';
 
@@ -11,7 +10,7 @@ class DerivePathScreen extends StatefulWidget {
   DerivePathScreen({Key key, this.title, this.seed}) : super(key: key);
 
   final String title;
-  final Uint8List seed;
+  final bip32.BIP32 seed;
 
   @override
   _DerivePathScreenState createState() => _DerivePathScreenState();
@@ -30,11 +29,15 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
       ),
       body: Column(
         children: [
-          SeedInfo(seed: bip32.BIP32.fromSeed(widget.seed)),
+          SeedInfo(seed: widget.seed),
           PathInputForm(onSave: _onSave),
           _buildNodeDisplay(_derivedNode),
         ],
-      ), //SeedInputForm(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => Navigator.pushNamed(context, Routes.editSecret, arguments: widget.seed),
+      ),
     );
   }
 
@@ -64,9 +67,8 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
   }
 
   void _onSave(String path) {
-    bip32.BIP32 nodeFromSeed = bip32.BIP32.fromSeed(widget.seed);
     try {
-      bip32.BIP32 child = nodeFromSeed.derivePath(path);
+      bip32.BIP32 child = widget.seed.derivePath(path);
       setState(() {
         _derivedNode = child;
       });
