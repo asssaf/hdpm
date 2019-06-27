@@ -36,7 +36,7 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () => Navigator.pushNamed(context, Routes.editSecret, arguments: widget.seed),
+        onPressed: () => _newItem(),
       ),
     );
   }
@@ -94,5 +94,9 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
         },
       );
     }
+  }
+
+  void _newItem() {
+    Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
   }
 }

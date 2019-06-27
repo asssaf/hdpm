@@ -4,19 +4,21 @@ import 'dart:typed_data';
 import 'package:bip32/bip32.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hdpm/models/secretitem.dart';
 import 'package:hdpm/screens/editsecret/component/mnemonicsecret.dart';
 import 'package:logging/logging.dart';
-import 'package:pointycastle/digests/ripemd160.dart';
 import 'package:rxdart/rxdart.dart';
 
 final Logger _logger = Logger('EditSecretForm');
 
 class EditSecretForm extends StatefulWidget {
-  EditSecretForm({Key key, @required this.seed})
+  EditSecretForm({Key key, @required this.seed, @required this.secretItem})
       : assert(seed != null),
+        assert(secretItem != null),
         super(key: key);
 
   final BIP32 seed;
+  final SecretItem secretItem;
 
   @override
   State createState() => _EditSecretFormState();
@@ -24,13 +26,7 @@ class EditSecretForm extends StatefulWidget {
 
 class _EditSecretFormState extends State<EditSecretForm> {
   GlobalKey<FormState> _formKey = GlobalKey();
-  TextEditingController _siteController;
-  TextEditingController _usernameController;
-
-  BehaviorSubject<String> _siteSubject;
-  BehaviorSubject<String> _usernameSubject;
-
-  Observable<_PathProvider> _pathObservable;
+  Observable<String> _pathObservable;
   Observable<Uint8List> _secretObservable;
 
   static const _secretTypes = ["Mnemonic Passphrase"];
@@ -41,42 +37,21 @@ class _EditSecretFormState extends State<EditSecretForm> {
   void initState() {
     super.initState();
 
-    _siteSubject = BehaviorSubject.seeded('');
-    _siteController = TextEditingController();
-    _siteController.addListener(() => _siteSubject.add(_siteController.text));
-
-    _usernameSubject = BehaviorSubject.seeded('');
-    _usernameController = TextEditingController();
-    _usernameController.addListener(() => _usernameSubject.add(_usernameController.text));
-
-    _pathObservable = Observable.combineLatest2(_siteSubject.distinct(), _usernameSubject.distinct(),
-        (site, username) => _HashPathProvider("$site\x00$username\x00")).asBroadcastStream();
-
-    _secretObservable = Observable.merge([
-      // whenever the path changes, the previous value is invalidated until the new secret is computed
-      _pathObservable.mapTo(null),
-      // compute the new secret after debouncing
-      _pathObservable.debounceTime(Duration(milliseconds: 500)).asyncMap(_deriveSecretFromPath).withLatestFrom(
-          _pathObservable, (s, p) => s.source == p ? s.secret : null) // if this secret is out of date throw it out
-    ]).asBroadcastStream();
+    _pathObservable = Observable.just(widget.secretItem.path).asBroadcastStream();
+    _secretObservable = _pathObservable.asyncMap(_deriveSecretFromPath).asBroadcastStream();
   }
 
   @override
   void dispose() {
-    _siteSubject.close();
-    _siteController.dispose();
-    _usernameSubject.close();
-    _usernameController.dispose();
-
     super.dispose();
   }
 
-  Future<_SecretWithSource> _deriveSecretFromPath(_PathProvider pathProvider) async {
+  Future<Uint8List> _deriveSecretFromPath(String path) async {
     _logger.finest('Starting secret derivation');
-    final node = await compute(_derivePath, _PathDerivationInput(widget.seed, pathProvider.path));
+    final node = await compute(_derivePath, _PathDerivationInput(widget.seed, path));
     final secret = Uint8List.fromList(node.privateKey.sublist(0, 16));
     _logger.finest('Finished secret derivation');
-    return _SecretWithSource(pathProvider, secret);
+    return secret;
   }
 
   static BIP32 _derivePath(_PathDerivationInput input) {
@@ -93,7 +68,6 @@ class _EditSecretFormState extends State<EditSecretForm> {
         children: <Widget>[
           ListTile(
             title: TextFormField(
-              controller: _siteController,
               decoration: InputDecoration(
                 labelText: 'Site',
               ),
@@ -107,7 +81,6 @@ class _EditSecretFormState extends State<EditSecretForm> {
           ),
           ListTile(
             title: TextFormField(
-              controller: _usernameController,
               decoration: InputDecoration(
                 labelText: 'Username',
               ),
@@ -157,38 +130,4 @@ class _PathDerivationInput {
 
   @override
   int get hashCode => seed.hashCode ^ path.hashCode;
-}
-
-abstract class _PathProvider {
-  String get path;
-}
-
-class _HashPathProvider extends _PathProvider {
-  _HashPathProvider(this.id);
-
-  final String id;
-
-  @override
-  String get path {
-    final digest = RIPEMD160Digest().process(Uint8List.fromList(id.codeUnits));
-
-    var path = "m/1";
-    for (int i = 0; i < 6; ++i) {
-      int index = 0;
-      for (int j = 0; j < 3; ++j) {
-        index = index << 8;
-        index += digest[i * 3 + j];
-      }
-      path += "/$index";
-    }
-
-    return path;
-  }
-}
-
-class _SecretWithSource {
-  _SecretWithSource(this.source, this.secret);
-
-  final _PathProvider source;
-  final Uint8List secret;
 }

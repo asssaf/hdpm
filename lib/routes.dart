@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hdpm/models/secretitem.dart';
 import 'package:hdpm/screens/derivepath/derivepathscreen.dart';
 import 'package:hdpm/screens/editsecret/editsecretscreen.dart';
 import 'package:hdpm/screens/passphraseinput/passphraseinputscreen.dart';
@@ -21,8 +22,11 @@ class Routes {
         var seed = settings.arguments;
         return MaterialPageRoute(builder: (_) => DerivePathScreen(title: 'Derive Path', seed: seed));
       case editSecret:
-        var seed = settings.arguments;
-        return MaterialPageRoute(builder: (_) => EditSecretScreen(title: 'Derivation Path', seed: seed));
+        final args = settings.arguments as Map<String, Object>;
+        final title = args['title'] ?? 'New Item';
+        final seed = args['seed'];
+        final secretItem = args['secretItem'] ?? SecretItem();
+        return MaterialPageRoute(builder: (_) => EditSecretScreen(title: title, seed: seed, secretItem: secretItem));
       default:
         return null;
     }

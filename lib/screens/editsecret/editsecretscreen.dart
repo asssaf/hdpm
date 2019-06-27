@@ -1,17 +1,23 @@
 import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
+import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/editsecret/component/editsecretform.dart';
+import 'package:hdpm/screens/editsecret/component/titleandpathform.dart';
+import 'package:hdpm/services/derivationpathdenerator.dart';
 
 class EditSecretScreen extends StatefulWidget {
   EditSecretScreen({
     Key key,
     this.title,
     @required this.seed,
+    this.secretItem,
   })  : assert(seed != null),
         super(key: key);
 
   final String title;
+  final SecretItem secretItem;
   final BIP32 seed;
 
   @override
@@ -19,8 +25,36 @@ class EditSecretScreen extends StatefulWidget {
 }
 
 class _EditSecretState extends State<EditSecretScreen> {
+  GlobalKey<FormState> _formKey = GlobalKey();
+  DerivationPathGenerator _derivationPathGenerator = DerivationPathGenerator();
+
   @override
   Widget build(BuildContext context) {
+    if (widget.secretItem.path == null) {
+      return Scaffold(
+        appBar: AppBarBuilder().build(
+          context: context,
+          title: widget.title,
+          locked: true,
+        ),
+        body: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: viewportConstraints.maxHeight),
+              child: TitleAndPathForm(
+                formKey: _formKey,
+                secretItem: widget.secretItem,
+              ),
+            ),
+          );
+        }),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.arrow_forward),
+          onPressed: () => _saveTitleForm(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBarBuilder().build(
         context: context,
@@ -36,7 +70,10 @@ class _EditSecretState extends State<EditSecretScreen> {
                 constraints: BoxConstraints(
                   minHeight: viewportConstraints.maxHeight,
                 ),
-                child: EditSecretForm(seed: widget.seed),
+                child: EditSecretForm(
+                  seed: widget.seed,
+                  secretItem: widget.secretItem,
+                ),
               ),
             );
           },
@@ -71,5 +108,19 @@ class _EditSecretState extends State<EditSecretScreen> {
     );
 
     return confirmed == true;
+  }
+
+  void _saveTitleForm() async {
+    final form = _formKey.currentState;
+    if (form.validate()) {
+      form.save();
+
+      if (!widget.secretItem.hasManualPath) {
+        widget.secretItem.path = await _derivationPathGenerator.textToPath(widget.secretItem.title);
+      }
+
+      Navigator.pushReplacementNamed(context, Routes.editSecret,
+          arguments: {'seed': widget.seed, 'title': widget.secretItem.title, 'secretItem': widget.secretItem});
+    }
   }
 }
