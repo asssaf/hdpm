@@ -55,7 +55,7 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
 
     Navigator.pushNamedAndRemoveUntil(
       context,
-      Routes.derivePath,
+      Routes.secretList,
       (_) => false,
       arguments: seed,
     );

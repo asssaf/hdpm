@@ -86,7 +86,7 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     } else {
       final seedBytes = SeedEncryption().decrypt(key, _encryptedSeed);
       final seed = BIP32.fromSeed(seedBytes);
-      Navigator.pushNamedAndRemoveUntil(context, Routes.derivePath, (_) => false, arguments: seed);
+      Navigator.pushNamedAndRemoveUntil(context, Routes.secretList, (_) => false, arguments: seed);
     }
   }
 

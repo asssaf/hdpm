@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
@@ -6,6 +8,9 @@ import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/editsecret/component/editsecretform.dart';
 import 'package:hdpm/screens/editsecret/component/titleandpathform.dart';
 import 'package:hdpm/services/derivationpathdenerator.dart';
+import 'package:hdpm/services/secretrepository.dart';
+
+import '../../appstatecontainer.dart';
 
 class EditSecretScreen extends StatefulWidget {
   EditSecretScreen({
@@ -56,10 +61,14 @@ class _EditSecretState extends State<EditSecretScreen> {
     }
 
     return Scaffold(
-      appBar: AppBarBuilder().build(
-        context: context,
-        title: widget.title,
-        locked: true,
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: _saveSecret,
+          ),
+        ],
       ),
       body: WillPopScope(
         onWillPop: _onWillPop,
@@ -122,5 +131,11 @@ class _EditSecretState extends State<EditSecretScreen> {
       Navigator.pushReplacementNamed(context, Routes.editSecret,
           arguments: {'seed': widget.seed, 'title': widget.secretItem.title, 'secretItem': widget.secretItem});
     }
+  }
+
+  void _saveSecret() async {
+    SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
+    await _secretRepository.save(widget.secretItem);
+    Navigator.pop(context);
   }
 }
