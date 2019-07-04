@@ -2,7 +2,6 @@ import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/components/bip32node/bip32nodedisplay.dart';
-import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/derivepath/components/pathinputform.dart';
 import 'package:hdpm/screens/derivepath/components/seedinfo.dart';
 
@@ -33,10 +32,6 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
           PathInputForm(onSave: _onSave),
           _buildNodeDisplay(_derivedNode),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _newItem(),
       ),
     );
   }
@@ -94,9 +89,5 @@ class _DerivePathScreenState extends State<DerivePathScreen> {
         },
       );
     }
-  }
-
-  void _newItem() {
-    Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
   }
 }

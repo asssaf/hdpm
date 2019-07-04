@@ -30,10 +30,10 @@ class _SecretListState extends State<SecretListScreen> {
     final titleWithFingerprint = '${widget.title} (${HEX.encode(widget.seed.fingerprint)})';
 
     return Scaffold(
-      appBar: AppBarBuilder().build(
-        context: context,
-        title: titleWithFingerprint,
-      ),
+      appBar: AppBarBuilder().action(_buildInfoAction()).build(
+            context: context,
+            title: titleWithFingerprint,
+          ),
       body: StreamBuilder(
         stream: _secretRepository.findAll(),
         builder: (context, AsyncSnapshot<List<SecretItem>> snapshot) {
@@ -64,6 +64,13 @@ class _SecretListState extends State<SecretListScreen> {
         child: Icon(Icons.add),
         onPressed: () => _newItem(),
       ),
+    );
+  }
+
+  Widget _buildInfoAction() {
+    return IconButton(
+      icon: Icon(Icons.info_outline),
+      onPressed: () => Navigator.pushNamed(context, Routes.derivePath, arguments: widget.seed),
     );
   }
 
