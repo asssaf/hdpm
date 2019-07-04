@@ -1,22 +1,17 @@
-import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:bip32/bip32.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hdpm/components/text/copyabletext.dart';
 import 'package:hdpm/models/secretitem.dart';
-import 'package:hdpm/screens/editsecret/component/mnemonicsecret.dart';
-import 'package:logging/logging.dart';
-import 'package:rxdart/rxdart.dart';
-
-final Logger _logger = Logger('EditSecretForm');
+import 'package:hdpm/screens/editsecret/component/derivedsecretitemffieldormfield.dart';
 
 class EditSecretForm extends StatefulWidget {
-  EditSecretForm({Key key, @required this.seed, @required this.secretItem})
+  EditSecretForm({Key key, this.formKey, @required this.seed, @required this.secretItem})
       : assert(seed != null),
         assert(secretItem != null),
         super(key: key);
 
+  final GlobalKey<FormState> formKey;
   final BIP32 seed;
   final SecretItem secretItem;
 
@@ -25,109 +20,76 @@ class EditSecretForm extends StatefulWidget {
 }
 
 class _EditSecretFormState extends State<EditSecretForm> {
-  GlobalKey<FormState> _formKey = GlobalKey();
-  Observable<String> _pathObservable;
-  Observable<Uint8List> _secretObservable;
-
-  static const _secretTypes = ["Mnemonic Passphrase"];
-  String _secretType = _secretTypes[0];
-  int _wordCount = 12;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _pathObservable = Observable.just(widget.secretItem.path).asBroadcastStream();
-    _secretObservable = _pathObservable.asyncMap(_deriveSecretFromPath).asBroadcastStream();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<Uint8List> _deriveSecretFromPath(String path) async {
-    _logger.finest('Starting secret derivation');
-    final node = await compute(_derivePath, _PathDerivationInput(widget.seed, path));
-    final secret = Uint8List.fromList(node.privateKey.sublist(0, 16));
-    _logger.finest('Finished secret derivation');
-    return secret;
-  }
-
-  static BIP32 _derivePath(_PathDerivationInput input) {
-    final node = input.seed.derivePath(input.path);
-
-    return node;
-  }
+  static const _itemBuilders = <Type, Function>{
+    CustomSecretItemField: _customFieldBuilder,
+    MnemonicPassphraseSecretItemField: _derivedFieldBuilder,
+  };
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            title: TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Site',
-              ),
-              autofocus: true,
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text';
-                }
-              },
-            ),
-          ),
-          ListTile(
-            title: TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Username',
-              ),
-              autofocus: true,
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text';
-                }
-              },
-            ),
-          ),
-          ListTile(
-            leading: Text('Type'),
-            title: DropdownButton<String>(
-              value: _secretType,
-              items: _secretTypes.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _secretType = value),
-            ),
-          ),
-          MnemonicSecret(
-            secretStream: _secretObservable,
-            wordCount: _wordCount,
-            onWordCountChanged: (value) => setState(() => _wordCount = value),
-          ),
-        ],
+      key: widget.formKey,
+      child: ListView.builder(
+        itemCount: widget.secretItem.fields.length,
+        itemBuilder: _itemBuilder(),
       ),
     );
   }
-}
 
-// input for the _derivePath compute function
-class _PathDerivationInput {
-  _PathDerivationInput(this.seed, this.path);
+  IndexedWidgetBuilder _itemBuilder() {
+    return (BuildContext context, int index) {
+      final field = widget.secretItem.fields[index];
+      final fieldBuilder = _itemBuilders[field.runtimeType];
+      return fieldBuilder(context, field);
+    };
+  }
 
-  final BIP32 seed;
-  final String path;
+  static Widget _customFieldBuilder(BuildContext context, CustomSecretItemField field) {
+    return ListTile(
+      title: TextFormField(
+        decoration: InputDecoration(
+          labelText: field.name,
+        ),
+        initialValue: field.value,
+        onSaved: (value) => field.value = value,
+      ),
+    );
+  }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _PathDerivationInput && runtimeType == other.runtimeType && seed == other.seed && path == other.path;
+  static Widget _derivedFieldBuilder(BuildContext context, MnemonicPassphraseSecretItemField field) {
+    final EditSecretForm widget = context.ancestorWidgetOfExactType(EditSecretForm);
+    final _EditSecretFormState state = context.ancestorStateOfType(TypeMatcher<_EditSecretFormState>());
+    return FutureBuilder(
+      future: field.deriveSecret(widget.seed).then(field.deriveValue),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        var data;
+        if (snapshot.hasError) {
+          data = 'Error';
+          return CopyableText(
+            title: field.name,
+            subtitle: data ?? '',
+            enabled: false,
+          );
+        } else if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+          data = 'Calculating...';
+          return CopyableText(
+            title: field.name,
+            subtitle: data ?? '',
+            enabled: false,
+          );
+        } else {
+          data = snapshot.data;
+        }
 
-  @override
-  int get hashCode => seed.hashCode ^ path.hashCode;
+        //TODO prevent copying while calculating
+        return DerivedSecretItemFieldFormField(
+          initialValue: field,
+          mnemonic: data,
+          onSaved: (value) {
+            field.wordCount = value.wordCount;
+          },
+        );
+      },
+    );
+  }
 }

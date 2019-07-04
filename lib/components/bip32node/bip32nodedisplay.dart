@@ -44,6 +44,6 @@ class _Bip32NodeState extends State<Bip32NodeDisplay> {
   }
 
   Widget _buildTab(String text) {
-    return CopyableText(title: text);
+    return CopyableText(subtitle: text);
   }
 }

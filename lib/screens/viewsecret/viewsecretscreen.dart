@@ -2,7 +2,9 @@ import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
+import 'package:hdpm/components/text/copyabletext.dart';
 import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/routes.dart';
 
 class ViewSecretScreen extends StatelessWidget {
   ViewSecretScreen({Key key, this.title, this.seed, this.secretItem}) : super(key: key);
@@ -11,6 +13,11 @@ class ViewSecretScreen extends StatelessWidget {
   final SecretItem secretItem;
   final BIP32 seed;
 
+  static const _itemBuilders = <Type, Function>{
+    CustomSecretItemField: _customFieldBuilder,
+    MnemonicPassphraseSecretItemField: _derivedFieldBuilder,
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,15 +25,13 @@ class ViewSecretScreen extends StatelessWidget {
             context: context,
             title: title,
           ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: viewportConstraints.maxHeight),
-              child: Container(),
-            ),
-          );
-        },
+      body: ListView.builder(
+        itemCount: secretItem.fields.length,
+        itemBuilder: _itemBuilder(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.edit),
+        onPressed: () => _edit(context),
       ),
     );
   }
@@ -36,6 +41,51 @@ class ViewSecretScreen extends StatelessWidget {
       icon: Icon(Icons.delete),
       onPressed: () => _delete(context),
     );
+  }
+
+  IndexedWidgetBuilder _itemBuilder() {
+    return (BuildContext context, index) {
+      final field = secretItem.fields[index];
+      final fieldBuilder = _itemBuilders[field.runtimeType];
+      return fieldBuilder(context, field);
+    };
+  }
+
+  static Widget _customFieldBuilder(BuildContext context, CustomSecretItemField field) {
+    return CopyableText(
+      title: field.name,
+      subtitle: field.value ?? '',
+      enabled: field.value.isNotEmpty,
+    );
+  }
+
+  static Widget _derivedFieldBuilder(BuildContext context, MnemonicPassphraseSecretItemField field) {
+    final ViewSecretScreen widget = context.ancestorWidgetOfExactType(ViewSecretScreen);
+    return FutureBuilder(
+      future: field.deriveSecret(widget.seed).then(field.deriveValue),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        var data;
+        bool enabled = false;
+        if (snapshot.hasError) {
+          data = 'Error';
+        } else if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+          data = 'Calculating...';
+        } else {
+          data = field.deriveFinalValue(snapshot.data);
+          enabled = true;
+        }
+
+        return CopyableText(
+          title: field.name,
+          subtitle: data ?? '',
+          enabled: enabled,
+        );
+      },
+    );
+  }
+
+  void _edit(context) {
+    Navigator.pushNamed(context, Routes.editSecret, arguments: {"seed": seed, "secretItem": secretItem});
   }
 
   void _delete(BuildContext context) async {

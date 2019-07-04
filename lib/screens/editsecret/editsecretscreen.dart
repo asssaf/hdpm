@@ -30,7 +30,8 @@ class EditSecretScreen extends StatefulWidget {
 }
 
 class _EditSecretState extends State<EditSecretScreen> {
-  GlobalKey<FormState> _formKey = GlobalKey();
+  GlobalKey<FormState> _titleFormKey = GlobalKey();
+  GlobalKey<FormState> _secretFormKey = GlobalKey();
   DerivationPathGenerator _derivationPathGenerator = DerivationPathGenerator();
 
   @override
@@ -47,7 +48,7 @@ class _EditSecretState extends State<EditSecretScreen> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: viewportConstraints.maxHeight),
               child: TitleAndPathForm(
-                formKey: _formKey,
+                formKey: _titleFormKey,
                 secretItem: widget.secretItem,
               ),
             ),
@@ -72,20 +73,10 @@ class _EditSecretState extends State<EditSecretScreen> {
       ),
       body: WillPopScope(
         onWillPop: _onWillPop,
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints viewportConstraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: viewportConstraints.maxHeight,
-                ),
-                child: EditSecretForm(
-                  seed: widget.seed,
-                  secretItem: widget.secretItem,
-                ),
-              ),
-            );
-          },
+        child: EditSecretForm(
+          formKey: _secretFormKey,
+          seed: widget.seed,
+          secretItem: widget.secretItem,
         ),
       ),
     );
@@ -120,7 +111,7 @@ class _EditSecretState extends State<EditSecretScreen> {
   }
 
   void _saveTitleForm() async {
-    final form = _formKey.currentState;
+    final form = _titleFormKey.currentState;
     if (form.validate()) {
       form.save();
 
@@ -134,8 +125,15 @@ class _EditSecretState extends State<EditSecretScreen> {
   }
 
   void _saveSecret() async {
-    SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
-    await _secretRepository.save(widget.secretItem);
-    Navigator.pop(context);
+    final form = _secretFormKey.currentState;
+    if (form.validate()) {
+      form.save();
+
+      SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
+
+      await _secretRepository.save(widget.secretItem);
+
+      Navigator.pop(context);
+    }
   }
 }

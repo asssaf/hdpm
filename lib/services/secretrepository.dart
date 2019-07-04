@@ -16,8 +16,11 @@ class SecretRepository {
   }
 
   Future<bool> save(SecretItem secret) async {
-    _secrets.add(secret);
-    _secretsSubject.add(new List.from(_secrets));
+    if (!_secrets.contains(secret)) {
+      _secrets.add(secret);
+      _secrets.sort((a, b) => a.title.compareTo(b.title));
+      _secretsSubject.add(new List.from(_secrets));
+    }
     return true;
   }
 
