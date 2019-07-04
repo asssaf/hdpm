@@ -52,7 +52,10 @@ class _SecretListState extends State<SecretListScreen> {
           return ListView.builder(
             itemCount: snapshot.data.length,
             itemBuilder: (BuildContext context, int index) {
-              return ListTile(title: Text(snapshot.data[index].title));
+              return InkWell(
+                child: ListTile(title: Text(snapshot.data[index].title)),
+                onTap: () => _viewItem(snapshot.data[index]),
+              );
             },
           );
         },
@@ -66,5 +69,9 @@ class _SecretListState extends State<SecretListScreen> {
 
   void _newItem() {
     Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
+  }
+
+  void _viewItem(SecretItem secret) {
+    Navigator.pushNamed(context, Routes.viewSecret, arguments: {'seed': widget.seed, 'secretItem': secret});
   }
 }

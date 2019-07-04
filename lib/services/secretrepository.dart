@@ -20,4 +20,12 @@ class SecretRepository {
     _secretsSubject.add(new List.from(_secrets));
     return true;
   }
+
+  Future<bool> delete(SecretItem secret) async {
+    final result = _secrets.remove(secret);
+    if (result) {
+      _secretsSubject.add(_secrets);
+    }
+    return result;
+  }
 }

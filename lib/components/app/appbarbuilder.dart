@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:hdpm/routes.dart';
 
 class AppBarBuilder {
+  List<Widget> _actions = List();
+
+  AppBarBuilder action(Widget action) {
+    _actions.add(action);
+    return this;
+  }
+
   AppBar build({BuildContext context, String title, bool locked = false}) {
-    final actions = <Widget>[];
+    final List<Widget> actions = List.from(_actions);
     if (!locked) {
       actions.add(buildLockAction(context));
     }

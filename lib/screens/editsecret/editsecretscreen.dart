@@ -129,7 +129,7 @@ class _EditSecretState extends State<EditSecretScreen> {
       }
 
       Navigator.pushReplacementNamed(context, Routes.editSecret,
-          arguments: {'seed': widget.seed, 'title': widget.secretItem.title, 'secretItem': widget.secretItem});
+          arguments: {'seed': widget.seed, 'secretItem': widget.secretItem});
     }
   }
 
