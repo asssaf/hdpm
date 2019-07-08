@@ -117,7 +117,7 @@ class ViewSecretScreen extends StatelessWidget {
       final secretRepository = AppStateContainer.of(context).state.secretRepository;
       final result = await secretRepository.delete(secretItem);
       if (result == true) {
-        Navigator.pop(context);
+        Navigator.pop(context, 'Deleted');
       } else {
         _showError(context);
       }

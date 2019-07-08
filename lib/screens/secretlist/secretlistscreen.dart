@@ -54,15 +54,17 @@ class _SecretListState extends State<SecretListScreen> {
             itemBuilder: (BuildContext context, int index) {
               return InkWell(
                 child: ListTile(title: Text(snapshot.data[index].title)),
-                onTap: () => _viewItem(snapshot.data[index]),
+                onTap: () => _viewItem(context, snapshot.data[index]),
               );
             },
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _newItem(),
+      floatingActionButton: Builder(
+        builder: (context) => FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () => _newItem(context),
+            ),
       ),
     );
   }
@@ -74,11 +76,23 @@ class _SecretListState extends State<SecretListScreen> {
     );
   }
 
-  void _newItem() {
-    Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
+  void _newItem(BuildContext context) async {
+    final result = await Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(result)));
+    }
   }
 
-  void _viewItem(SecretItem secret) {
-    Navigator.pushNamed(context, Routes.viewSecret, arguments: {'seed': widget.seed, 'secretItem': secret});
+  void _viewItem(BuildContext context, SecretItem secret) async {
+    final result =
+        await Navigator.pushNamed(context, Routes.viewSecret, arguments: {'seed': widget.seed, 'secretItem': secret});
+
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(result)));
+    }
   }
 }

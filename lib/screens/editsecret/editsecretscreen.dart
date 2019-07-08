@@ -119,8 +119,11 @@ class _EditSecretState extends State<EditSecretScreen> {
         widget.secretItem.path = await _derivationPathGenerator.textToPath(widget.secretItem.title);
       }
 
-      Navigator.pushReplacementNamed(context, Routes.editSecret,
-          arguments: {'seed': widget.seed, 'secretItem': widget.secretItem});
+      Completer<dynamic> completer = Completer();
+      final result = Navigator.pushReplacementNamed(context, Routes.editSecret,
+          result: completer.future, arguments: {'seed': widget.seed, 'secretItem': widget.secretItem});
+
+      completer.complete(result);
     }
   }
 
@@ -133,7 +136,7 @@ class _EditSecretState extends State<EditSecretScreen> {
 
       await _secretRepository.save(widget.secretItem);
 
-      Navigator.pop(context);
+      Navigator.pop(context, 'Saved');
     }
   }
 }
