@@ -1,16 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
+import 'package:hdpm/services/computeutils.dart';
 import 'package:hdpm/services/derivationpathdenerator.dart';
 import 'package:rxdart/rxdart.dart';
 
 class TitleAndPathForm extends StatefulWidget {
-  TitleAndPathForm({Key key, this.formKey, this.secretItem}) : super(key: key);
+  TitleAndPathForm({Key key, this.formKey, this.secretItem, this.secretItemBuilder}) : super(key: key);
 
   final GlobalKey<FormState> formKey;
   final SecretItem secretItem;
+  final SecretItemBuilder secretItemBuilder;
 
   @override
   State createState() => _TitleAndPathFormState();
@@ -19,6 +19,7 @@ class TitleAndPathForm extends StatefulWidget {
 class _TitleAndPathFormState extends State<TitleAndPathForm> {
   TextEditingController _titleController;
   BehaviorSubject<String> _titleSubject;
+  bool _hasManualPath;
   Observable<String> _autoPathObservable;
   DerivationPathGenerator _derivationPathGenerator = DerivationPathGenerator();
 
@@ -30,11 +31,11 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
     _titleController = TextEditingController(text: widget.secretItem.title);
     _titleController.addListener(() => _titleSubject.add(_titleController.text));
 
-    _autoPathObservable = Observable.merge([
-      // invalidate previous result as soon as a new computation is started
-      _titleSubject.mapTo(null),
-      _computeAndDropOldResults<String, String>(_titleSubject, _derivationPathGenerator.textToPath),
-    ]);
+    _hasManualPath = widget.secretItem.hasManualPath;
+    _autoPathObservable =
+        computeAndDropOldResultsInvalidate<String, String>(_titleSubject.stream, _derivationPathGenerator.textToPath);
+
+    widget.secretItemBuilder.replace(widget.secretItem);
   }
 
   @override
@@ -46,8 +47,6 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
 
   @override
   Widget build(BuildContext context) {
-    SecretItem _secretItem = widget.secretItem;
-
     return Form(
       key: widget.formKey,
       child: Column(
@@ -64,20 +63,23 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
                   return 'Please enter some text';
                 }
               },
-              onSaved: (value) => setState(() => _secretItem.title = value),
+              onSaved: (value) => widget.secretItemBuilder.title = value,
             ),
           ),
           SwitchListTile(
             title: Text('Autogenerate derivation path'),
-            value: !_secretItem.hasManualPath,
-            onChanged: (value) => setState(() => _secretItem.hasManualPath = !value),
+            value: !_hasManualPath, //!_secretItem.hasManualPath,
+            onChanged: (value) => setState(() {
+                  _hasManualPath = !value;
+                  widget.secretItemBuilder.hasManualPath = !value;
+                }),
           ),
           Offstage(
-            offstage: _secretItem.hasManualPath,
+            offstage: _hasManualPath,
             child: _buildAutoDerivationPath(),
           ),
           Offstage(
-            offstage: !_secretItem.hasManualPath,
+            offstage: !_hasManualPath,
             child: _buildManualDerivationPath(),
           ),
         ],
@@ -115,18 +117,10 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
         },
         onSaved: (value) {
           if (widget.secretItem.hasManualPath) {
-            widget.secretItem.path = value;
+            widget.secretItemBuilder.path = value;
           }
         },
       ),
     );
-  }
-
-  static Observable<T> _computeAndDropOldResults<S, T>(Observable<S> source, Future<T> fn(S s)) {
-    return source
-        .distinct()
-        .debounceTime(Duration(milliseconds: 250))
-        .asyncMap(fn)
-        .switchMap((t) => Observable.just(t));
   }
 }

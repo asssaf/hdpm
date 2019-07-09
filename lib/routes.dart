@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
+import 'package:hdpm/screens/derivedsecretitemfieldcustomizer/derivedsecretitemfieldcustomizerscreen.dart';
 import 'package:hdpm/screens/derivepath/derivepathscreen.dart';
 import 'package:hdpm/screens/editsecret/editsecretscreen.dart';
 import 'package:hdpm/screens/passphraseinput/passphraseinputscreen.dart';
@@ -14,6 +15,7 @@ class Routes {
   static const secretList = '/secrets';
   static const viewSecret = '/viewSecret';
   static const editSecret = '/editSecret';
+  static const customizeDerivedField = '/customizeDerivedField';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -40,6 +42,13 @@ class Routes {
         final SecretItem secretItem = args['secretItem'] ?? SecretItem();
         final title = secretItem.title ?? args['title'] ?? 'New Item';
         return MaterialPageRoute(builder: (_) => EditSecretScreen(title: title, seed: seed, secretItem: secretItem));
+      case customizeDerivedField:
+        final args = settings.arguments as Map<String, Object>;
+        final seed = args['seed'];
+        final SecretItem secretItem = args['secretItem'];
+        final DerivedSecretItemField field = args['field'];
+        return MaterialPageRoute(
+            builder: (_) => DerivedSecretItemFieldCustomizerScreen(seed: seed, secretItem: secretItem, field: field));
       default:
         return null;
     }

@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/components/text/copyabletext.dart';
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/screenresult.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/routes.dart';
+import 'package:hdpm/screens/derivedsecretitemfieldcustomizer/components/derivedsecretitemfieldpreview.dart';
+import 'package:hdpm/services/secretrepository.dart';
 
 class ViewSecretScreen extends StatelessWidget {
   ViewSecretScreen({Key key, this.title, this.seed, this.secretItem}) : super(key: key);
@@ -14,12 +17,15 @@ class ViewSecretScreen extends StatelessWidget {
   final BIP32 seed;
 
   static const _itemBuilders = <Type, Function>{
-    CustomSecretItemField: _customFieldBuilder,
-    MnemonicPassphraseSecretItemField: _derivedFieldBuilder,
+    CustomSecretItemField.gtype: _customFieldBuilder,
+    DerivedSecretItemField.gtype: _derivedFieldBuilder,
   };
 
   @override
   Widget build(BuildContext context) {
+    final SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
+    _secretRepository.findByPath(secretItem.path);
+
     return Scaffold(
       appBar: AppBarBuilder().action(_buildDeleteAction(context)).build(
             context: context,
@@ -47,6 +53,9 @@ class ViewSecretScreen extends StatelessWidget {
     return (BuildContext context, index) {
       final field = secretItem.fields[index];
       final fieldBuilder = _itemBuilders[field.runtimeType];
+      if (fieldBuilder == null) {
+        throw Exception('Unsupported field type: ${field.runtimeType}');
+      }
       return fieldBuilder(context, field);
     };
   }
@@ -59,33 +68,23 @@ class ViewSecretScreen extends StatelessWidget {
     );
   }
 
-  static Widget _derivedFieldBuilder(BuildContext context, MnemonicPassphraseSecretItemField field) {
+  static Widget _derivedFieldBuilder(BuildContext context, DerivedSecretItemField field) {
     final ViewSecretScreen widget = context.ancestorWidgetOfExactType(ViewSecretScreen);
-    return FutureBuilder(
-      future: field.deriveSecret(widget.seed).then(field.deriveValue),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        var data;
-        bool enabled = false;
-        if (snapshot.hasError) {
-          data = 'Error';
-        } else if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
-          data = 'Calculating...';
-        } else {
-          data = field.deriveFinalValue(snapshot.data);
-          enabled = true;
-        }
 
-        return CopyableText(
-          title: field.name,
-          subtitle: data ?? '',
-          enabled: enabled,
-        );
-      },
+    return DerivedSecretItemFieldPreview(
+      seed: widget.seed,
+      secretItem: widget.secretItem,
+      field: field,
     );
   }
 
-  void _edit(context) {
-    Navigator.pushNamed(context, Routes.editSecret, arguments: {"seed": seed, "secretItem": secretItem});
+  void _edit(context) async {
+    final result =
+        await Navigator.pushNamed(context, Routes.editSecret, arguments: {"seed": seed, "secretItem": secretItem});
+    if (result is ScreenResult) {
+      Navigator.pushReplacementNamed(context, Routes.viewSecret,
+          arguments: {"seed": seed, "secretItem": result.result});
+    }
   }
 
   void _delete(BuildContext context) async {
@@ -117,7 +116,7 @@ class ViewSecretScreen extends StatelessWidget {
       final secretRepository = AppStateContainer.of(context).state.secretRepository;
       final result = await secretRepository.delete(secretItem);
       if (result == true) {
-        Navigator.pop(context, 'Deleted');
+        Navigator.pop(context, ScreenResult(message: 'Deleted', result: secretItem));
       } else {
         _showError(context);
       }

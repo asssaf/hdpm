@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SecretRepository {
@@ -15,12 +15,21 @@ class SecretRepository {
     return _secretsSubject.stream;
   }
 
+  Observable<SecretItem> findByPath(String path) {
+    return _secretsSubject.stream.map((secrets) => secrets.firstWhere((secret) => secret.path == path, orElse: null));
+  }
+
   Future<bool> save(SecretItem secret) async {
-    if (!_secrets.contains(secret)) {
+    final index = _secrets.indexWhere((s) => s.path == secret.path);
+    if (index >= 0) {
+      _secrets[index] = secret;
+    } else {
       _secrets.add(secret);
-      _secrets.sort((a, b) => a.title.compareTo(b.title));
-      _secretsSubject.add(new List.from(_secrets));
     }
+
+    _secrets.sort((a, b) => a.title.compareTo(b.title));
+    _secretsSubject.add(new List.from(_secrets));
+
     return true;
   }
 

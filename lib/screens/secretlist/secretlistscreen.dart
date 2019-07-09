@@ -2,7 +2,8 @@ import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/material.dart';
 import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/screenresult.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/services/secretrepository.dart';
 import 'package:hex/hex.dart';
@@ -78,10 +79,10 @@ class _SecretListState extends State<SecretListScreen> {
 
   void _newItem(BuildContext context) async {
     final result = await Navigator.pushNamed(context, Routes.editSecret, arguments: {'seed': widget.seed});
-    if (result != null) {
+    if (result is ScreenResult) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(result)));
+        ..showSnackBar(SnackBar(content: Text(result.message)));
     }
   }
 
@@ -89,10 +90,10 @@ class _SecretListState extends State<SecretListScreen> {
     final result =
         await Navigator.pushNamed(context, Routes.viewSecret, arguments: {'seed': widget.seed, 'secretItem': secret});
 
-    if (result != null) {
+    if (result is ScreenResult) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(result)));
+        ..showSnackBar(SnackBar(content: Text(result.message)));
     }
   }
 }

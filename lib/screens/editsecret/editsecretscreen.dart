@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
-import 'package:hdpm/models/secretitem.dart';
+import 'package:hdpm/models/screenresult.dart';
+import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/editsecret/component/editsecretform.dart';
 import 'package:hdpm/screens/editsecret/component/titleandpathform.dart';
@@ -34,6 +35,14 @@ class _EditSecretState extends State<EditSecretScreen> {
   GlobalKey<FormState> _secretFormKey = GlobalKey();
   DerivationPathGenerator _derivationPathGenerator = DerivationPathGenerator();
 
+  SecretItemBuilder _secretItemBuilder = SecretItemBuilder();
+
+  @override
+  void initState() {
+    super.initState();
+    _secretItemBuilder.replace(widget.secretItem);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.secretItem.path == null) {
@@ -50,6 +59,7 @@ class _EditSecretState extends State<EditSecretScreen> {
               child: TitleAndPathForm(
                 formKey: _titleFormKey,
                 secretItem: widget.secretItem,
+                secretItemBuilder: _secretItemBuilder,
               ),
             ),
           );
@@ -76,7 +86,8 @@ class _EditSecretState extends State<EditSecretScreen> {
         child: EditSecretForm(
           formKey: _secretFormKey,
           seed: widget.seed,
-          secretItem: widget.secretItem,
+          secretItem: _secretItemBuilder.build(),
+          secretItemBuilder: _secretItemBuilder,
         ),
       ),
     );
@@ -115,13 +126,15 @@ class _EditSecretState extends State<EditSecretScreen> {
     if (form.validate()) {
       form.save();
 
-      if (!widget.secretItem.hasManualPath) {
-        widget.secretItem.path = await _derivationPathGenerator.textToPath(widget.secretItem.title);
+      if (!_secretItemBuilder.hasManualPath) {
+        _secretItemBuilder.path = await _derivationPathGenerator.textToPath(_secretItemBuilder.title);
       }
+
+      final secretItem = _secretItemBuilder.build();
 
       Completer<dynamic> completer = Completer();
       final result = Navigator.pushReplacementNamed(context, Routes.editSecret,
-          result: completer.future, arguments: {'seed': widget.seed, 'secretItem': widget.secretItem});
+          result: completer.future, arguments: {'seed': widget.seed, 'secretItem': secretItem});
 
       completer.complete(result);
     }
@@ -134,9 +147,10 @@ class _EditSecretState extends State<EditSecretScreen> {
 
       SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
 
-      await _secretRepository.save(widget.secretItem);
+      final secretItem = _secretItemBuilder.build();
+      await _secretRepository.save(secretItem);
 
-      Navigator.pop(context, 'Saved');
+      Navigator.pop(context, ScreenResult(message: 'Saved', result: secretItem));
     }
   }
 }
