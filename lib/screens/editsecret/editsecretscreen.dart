@@ -8,7 +8,7 @@ import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/editsecret/component/editsecretform.dart';
 import 'package:hdpm/screens/editsecret/component/titleandpathform.dart';
-import 'package:hdpm/services/derivationpathdenerator.dart';
+import 'package:hdpm/services/derivationpathdgenerator.dart';
 import 'package:hdpm/services/secretrepository.dart';
 
 import '../../appstatecontainer.dart';

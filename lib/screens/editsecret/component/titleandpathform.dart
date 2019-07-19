@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/services/computeutils.dart';
-import 'package:hdpm/services/derivationpathdenerator.dart';
+import 'package:hdpm/services/derivationpathdgenerator.dart';
 import 'package:rxdart/rxdart.dart';
 
 class TitleAndPathForm extends StatefulWidget {
