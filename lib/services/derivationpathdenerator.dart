@@ -15,7 +15,10 @@ class DerivationPathGenerator {
     // each path segment can encode 31 bits, we can encode 93 bits in 3 segments
     // which should be enough to make collisions unlikely
     final data = new ByteData.view(digest.buffer);
-    var path = "m/1";
+
+    // use 1 as the purpose field to avoid clash with bip32 default account (0) and bip-43, bip-44 etc.
+    // use hardened derivation in this level
+    var path = "m/1'";
 
     for (int i = 0; i < 3; ++i) {
       // get 32 bits from the hash
