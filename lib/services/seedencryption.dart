@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/api.dart';
 
-final Logger _logger = Logger('SeedRepository');
+final Logger _logger = Logger('SeedEncryption');
 
 /// encrypt the seed using AES without authentication (decrypting with different keys
 /// will return different seeds)

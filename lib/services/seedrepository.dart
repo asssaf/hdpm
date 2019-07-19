@@ -10,6 +10,7 @@ final Logger _logger = Logger('SeedRepository');
 /// this doesn't handle encryption/decryption
 class SeedRepository {
   static const SEED_PREF_KEY = 'encrypted_seed';
+  static const int VERSION = 0;
 
   Future<Uint8List> fetchSeed() async {
     _logger.fine("Loading seed from prefs");
@@ -21,7 +22,7 @@ class SeedRepository {
       return null;
     } else {
       _logger.fine('Loaded seed from prefs');
-      return HEX.decode(encryptedSeed);
+      return _decodeVersion(HEX.decode(encryptedSeed));
     }
   }
 
@@ -29,7 +30,8 @@ class SeedRepository {
     _logger.fine('Saving seed in prefs');
     final prefs = await SharedPreferences.getInstance();
 
-    final result = await prefs.setString(SEED_PREF_KEY, HEX.encode(encryptedSeed));
+    final encoded = HEX.encode(_encodeVersion(encryptedSeed));
+    final result = await prefs.setString(SEED_PREF_KEY, encoded);
 
     _logger.fine('Finished saving seed in prefs - result: $result');
 
@@ -45,5 +47,19 @@ class SeedRepository {
     _logger.fine('Finished deleting seed from prefs - result: $result');
 
     return result;
+  }
+
+  Uint8List _encodeVersion(Uint8List encrypted) {
+    print('encoded: ${Uint8List.fromList([VERSION]) + encrypted}');
+    return Uint8List.fromList([VERSION] + encrypted);
+  }
+
+  Uint8List _decodeVersion(Uint8List versioned) {
+    if (versioned[0] != VERSION) {
+      _logger.warning('Unsupported version or corrupt seed: ${versioned[0]}');
+      return null;
+    }
+
+    return versioned.sublist(1);
   }
 }
