@@ -74,9 +74,14 @@ abstract class DerivedSecretItemField
   DerivedSecretItemFieldType get type;
 
   Future<Uint8List> deriveSecret(BIP32 seed, String basePath) async {
-    final input = _PathDerivationInput(seed, "$basePath/$slot'/$generation'");
+    final fullPath = "$basePath/$slot'/$generation'";
+    final input = _PathDerivationInput(seed, fullPath);
     final node = await compute(_derivePath, input);
-    final hashed = sha256.newInstance().convert(node.privateKey).bytes;
+
+    // append the path to the private key (in case an index is skipped by derivation)
+    final prehash = node.privateKey + fullPath.codeUnits;
+
+    final hashed = sha256.newInstance().convert(prehash).bytes;
     return hashed;
   }
 
