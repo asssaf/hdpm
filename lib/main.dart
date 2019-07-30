@@ -22,6 +22,8 @@ void main() {
   runApp(AppStateContainer(child: HdpmApp()));
 }
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 class HdpmApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,7 @@ class HdpmApp extends StatelessWidget {
       ),
       initialRoute: '/',
       onGenerateRoute: Routes.generateRoute,
+      navigatorObservers: [routeObserver],
     );
   }
 }

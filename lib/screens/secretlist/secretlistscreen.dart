@@ -2,6 +2,7 @@ import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/material.dart';
 import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
+import 'package:hdpm/components/app/snackbarremover.dart';
 import 'package:hdpm/models/screenresult.dart';
 import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/routes.dart';
@@ -35,31 +36,33 @@ class _SecretListState extends State<SecretListScreen> {
             context: context,
             title: titleWithFingerprint,
           ),
-      body: StreamBuilder(
-        stream: _secretRepository.findAll(),
-        builder: (context, AsyncSnapshot<List<SecretItem>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading');
-          }
+      body: SnackBarRemover(
+        child: StreamBuilder(
+          stream: _secretRepository.findAll(),
+          builder: (context, AsyncSnapshot<List<SecretItem>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Text('Loading');
+            }
 
-          if (snapshot.hasError) {
-            return Text('Error');
-          }
+            if (snapshot.hasError) {
+              return Text('Error');
+            }
 
-          if (!snapshot.hasData || snapshot.data.length == 0) {
-            return Center(child: Text('No items'));
-          }
+            if (!snapshot.hasData || snapshot.data.length == 0) {
+              return Center(child: Text('No items'));
+            }
 
-          return ListView.builder(
-            itemCount: snapshot.data.length,
-            itemBuilder: (BuildContext context, int index) {
-              return InkWell(
-                child: ListTile(title: Text(snapshot.data[index].title)),
-                onTap: () => _viewItem(context, snapshot.data[index]),
-              );
-            },
-          );
-        },
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return InkWell(
+                  child: ListTile(title: Text(snapshot.data[index].title)),
+                  onTap: () => _viewItem(context, snapshot.data[index]),
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: Builder(
         builder: (context) => FloatingActionButton(
@@ -73,8 +76,12 @@ class _SecretListState extends State<SecretListScreen> {
   Widget _buildInfoAction() {
     return IconButton(
       icon: Icon(Icons.info_outline),
-      onPressed: () => Navigator.pushNamed(context, Routes.derivePath, arguments: widget.seed),
+      onPressed: () => _info(context),
     );
+  }
+
+  void _info(BuildContext context) {
+    Navigator.pushNamed(context, Routes.derivePath, arguments: widget.seed);
   }
 
   void _newItem(BuildContext context) async {
