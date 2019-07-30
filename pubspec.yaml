@@ -30,6 +30,7 @@ dependencies:
   logging: ^0.11.3
   shared_preferences: ^0.5.3
   built_value: ^6.7.0
+  quiver: '>=2.0.0 <3.0.0'
 
 dev_dependencies:
   flutter_test:

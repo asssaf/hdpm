@@ -3,9 +3,8 @@ import 'dart:typed_data';
 import 'package:bip32/bip32.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hdpm/models/secretitem/mnemonicpassphrasesecretitemfieldtype.dart';
+import 'package:hdpm/services/secretderiver.dart';
 
 part 'secretitem.g.dart';
 
@@ -75,24 +74,11 @@ abstract class DerivedSecretItemField
 
   Future<Uint8List> deriveSecret(BIP32 seed, String basePath) async {
     final fullPath = "$basePath/$slot'/$generation'";
-    final input = _PathDerivationInput(seed, fullPath);
-    final node = await compute(_derivePath, input);
-
-    // append the path to the private key (in case an index is skipped by derivation)
-    final prehash = node.privateKey + fullPath.codeUnits;
-
-    final hashed = sha256.newInstance().convert(prehash).bytes;
-    return hashed;
+    return await SecretDeriver().deriveSecret(seed, fullPath);
   }
 
   Future<String> deriveValue(Uint8List secret) => type.deriveValue(secret);
   String deriveFinalValue(String value) => type.deriveFinalValue(value);
-
-  static BIP32 _derivePath(_PathDerivationInput input) {
-    final node = input.seed.derivePath(input.path);
-
-    return node;
-  }
 
   static const Type gtype = _$DerivedSecretItemField;
 }
@@ -112,20 +98,4 @@ abstract class DerivedSecretItemFieldType {
   String deriveFinalValue(String value);
   DerivedSecretItemFieldType clone();
   String get name;
-}
-
-// input for the _derivePath compute function
-class _PathDerivationInput {
-  _PathDerivationInput(this.seed, this.path);
-
-  final BIP32 seed;
-  final String path;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _PathDerivationInput && runtimeType == other.runtimeType && seed == other.seed && path == other.path;
-
-  @override
-  int get hashCode => seed.hashCode ^ path.hashCode;
 }
