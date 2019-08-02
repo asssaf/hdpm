@@ -41,11 +41,11 @@ class _SecretListState extends State<SecretListScreen> {
           stream: _secretRepository.findAll(),
           builder: (context, AsyncSnapshot<List<SecretItem>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Text('Loading');
+              return Center(child: Text('Loading'));
             }
 
             if (snapshot.hasError) {
-              return Text('Error');
+              return Center(child: Text('Error'));
             }
 
             if (!snapshot.hasData || snapshot.data.length == 0) {

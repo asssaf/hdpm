@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:bip32/bip32.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 import 'package:hdpm/models/secretitem/mnemonicpassphrasesecretitemfieldtype.dart';
+import 'package:hdpm/models/secretitem/passwordsecretitemfieldtype.dart';
 import 'package:hdpm/services/secretderiver.dart';
 
 part 'secretitem.g.dart';
@@ -11,6 +13,8 @@ part 'secretitem.g.dart';
 abstract class SecretItem implements Built<SecretItem, SecretItemBuilder> {
   SecretItem._();
   factory SecretItem([void Function(SecretItemBuilder) updates]) = _$SecretItem;
+
+  static Serializer<SecretItem> get serializer => _$secretItemSerializer;
 
   @nullable
   String get title;
@@ -57,6 +61,8 @@ abstract class CustomSecretItemField
   CustomSecretItemField._();
   factory CustomSecretItemField([void Function(CustomSecretItemFieldBuilder) updates]) = _$CustomSecretItemField;
 
+  static Serializer<CustomSecretItemField> get serializer => _$customSecretItemFieldSerializer;
+
   @nullable
   String get value;
 
@@ -67,6 +73,8 @@ abstract class DerivedSecretItemField
     implements SecretItemField, Built<DerivedSecretItemField, DerivedSecretItemFieldBuilder> {
   DerivedSecretItemField._();
   factory DerivedSecretItemField([void Function(DerivedSecretItemFieldBuilder) updates]) = _$DerivedSecretItemField;
+
+  static Serializer<DerivedSecretItemField> get serializer => _$derivedSecretItemFieldSerializer;
 
   int get slot;
   int get generation;

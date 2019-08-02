@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hex/hex.dart';
 
@@ -13,6 +14,9 @@ abstract class MnemonicPassphraseSecretItemFieldType
         Built<MnemonicPassphraseSecretItemFieldType, MnemonicPassphraseSecretItemFieldTypeBuilder> {
   MnemonicPassphraseSecretItemFieldType._();
   factory MnemonicPassphraseSecretItemFieldType() = _$MnemonicPassphraseSecretItemFieldType;
+
+  static Serializer<MnemonicPassphraseSecretItemFieldType> get serializer =>
+      _$mnemonicPassphraseSecretItemFieldTypeSerializer;
 
   int get wordCount;
 

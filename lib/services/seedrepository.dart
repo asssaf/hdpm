@@ -50,7 +50,6 @@ class SeedRepository {
   }
 
   Uint8List _encodeVersion(Uint8List encrypted) {
-    print('encoded: ${Uint8List.fromList([VERSION]) + encrypted}');
     return Uint8List.fromList([VERSION] + encrypted);
   }
 

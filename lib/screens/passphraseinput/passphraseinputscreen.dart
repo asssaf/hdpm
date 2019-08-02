@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:bip32/bip32.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/passphraseinput/components/passphraseinputform.dart';
@@ -50,7 +51,7 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
               constraints: BoxConstraints(
                 minHeight: viewportConstraints.maxHeight,
               ),
-              child: PassphraseInputForm(onSave: _onSave, enabled: !_processing),
+              child: PassphraseInputForm(onSave: (passphrase) => _onSave(passphrase, context), enabled: !_processing),
             ),
           );
         },
@@ -66,7 +67,7 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     });
   }
 
-  void _onSave(String passphrase) async {
+  void _onSave(String passphrase, BuildContext context) async {
     setState(() {
       _processing = true;
     });
@@ -86,7 +87,13 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     } else {
       final seedBytes = SeedEncryption().decrypt(key, _encryptedSeed);
       final seed = BIP32.fromSeed(seedBytes);
-      Navigator.pushNamedAndRemoveUntil(context, Routes.secretList, (_) => false, arguments: seed);
+
+      try {
+        await AppStateContainer.of(context).state.openSecretStore(seed: seed);
+        Navigator.pushNamedAndRemoveUntil(context, Routes.secretList, (_) => false, arguments: seed);
+      } catch (error) {
+        Scaffold.of(context).showSnackBar(SnackBar(content: Text('Failed to load metadata, please try again')));
+      }
     }
   }
 

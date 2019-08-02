@@ -2,7 +2,7 @@ import 'package:hdpm/models/secretitem/secretitem.dart';
 import 'package:hdpm/services/secretrepository.dart';
 import 'package:rxdart/rxdart.dart';
 
-class InMemSecretRepository implements SecretRepository {
+class InMemSecretRepository extends SecretRepository {
   InMemSecretRepository() {
     _secretsSubject.add(_secrets);
   }
@@ -42,5 +42,15 @@ class InMemSecretRepository implements SecretRepository {
       _secretsSubject.add(_secrets);
     }
     return result;
+  }
+
+  void import(List<SecretItem> secrets) {
+    _secrets.clear();
+    _secrets.addAll(secrets);
+    _secretsSubject.add(_secrets);
+  }
+
+  List<SecretItem> export() {
+    return List.from(_secrets);
   }
 }

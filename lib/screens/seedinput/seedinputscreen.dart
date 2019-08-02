@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:bip32/bip32.dart';
 import 'package:flutter/material.dart';
+import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/seedinput/components/seedinputform.dart';
@@ -38,7 +39,7 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
               constraints: BoxConstraints(
                 minHeight: viewportConstraints.maxHeight,
               ),
-              child: SeedInputForm(onSave: _save),
+              child: SeedInputForm(onSave: (seedBytes) => _save(seedBytes, context)),
             ),
           );
         },
@@ -46,18 +47,24 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
     );
   }
 
-  void _save(Uint8List seedBytes) async {
+  void _save(Uint8List seedBytes, BuildContext context) async {
     // store encrypted seed in SharedPreferences
     final encryptedSeed = SeedEncryption().encrypt(widget.seedEncryptionKey, seedBytes);
     SeedRepository().saveSeed(encryptedSeed);
 
     final seed = BIP32.fromSeed(seedBytes);
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      Routes.secretList,
-      (_) => false,
-      arguments: seed,
-    );
+    try {
+      await AppStateContainer.of(context).state.openSecretStore(seed: seed);
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        Routes.secretList,
+        (_) => false,
+        arguments: seed,
+      );
+    } catch (error) {
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text('Failed to load metadata, please try again')));
+    }
   }
 }
