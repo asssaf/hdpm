@@ -8,7 +8,7 @@ import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/passphraseinput/components/passphraseinputform.dart';
-import 'package:hdpm/services/seedencryption.dart';
+import 'package:hdpm/services/encryption.dart';
 import 'package:hdpm/services/seedrepository.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/api.dart';
@@ -73,7 +73,7 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     });
 
     _logger.fine('Deriving key from passphrase');
-    var key = await compute(_computeKey, passphrase);
+    var seedEncryptionKey = await compute(_computeKey, passphrase);
     _logger.fine('Finished deriving key from passphrase');
 
     setState(() {
@@ -83,12 +83,12 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     //TODO if still loading, wait
 
     if (_encryptedSeed == null) {
-      Navigator.pushNamed(context, Routes.seedInput, arguments: key);
+      Navigator.pushNamed(context, Routes.seedInput, arguments: seedEncryptionKey);
     } else {
-      final seedBytes = SeedEncryption().decrypt(key, _encryptedSeed);
-      final seed = BIP32.fromSeed(seedBytes);
-
       try {
+        final seedBytes = decrypt(seedEncryptionKey, _encryptedSeed);
+        final seed = BIP32.fromSeed(seedBytes);
+
         await AppStateContainer.of(context).state.openSecretStore(seed: seed);
         Navigator.pushNamedAndRemoveUntil(context, Routes.secretList, (_) => false, arguments: seed);
       } catch (error) {
@@ -97,17 +97,17 @@ class _PassphraseInputState extends State<PassphraseInputScreen> {
     }
   }
 
-  static Uint8List _computeKey(String passphrase) {
+  static EncryptionKey _computeKey(String passphrase) {
     //TODO argon2 would be better (side channel attack resistant) but not supported by pointycastle
     KeyDerivator derivator = Scrypt();
 
     final N = 2048;
     final r = 8;
     final p = 1;
-    final desiredKeySize = 32; // 32 byte key needed for aes256
+    final desiredKeySize = 64; // 32 byte key needed for aes256 and another 32 bytes for the HMAC key
     final salt = utf8.encode("hdpm.1560390267");
 
     derivator.init(ScryptParameters(N, r, p, desiredKeySize, salt));
-    return derivator.process(utf8.encode(passphrase));
+    return EncryptionKey.split(derivator.process(utf8.encode(passphrase)));
   }
 }

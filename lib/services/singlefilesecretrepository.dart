@@ -58,9 +58,7 @@ class SingleFileSecretRepository extends InMemSecretRepository {
     } else {
       final data = await file.readAsBytes();
 
-      final hmacKey = await SecretDeriver().deriveSecret(seed, "m/2'/1'");
-      final key = await SecretDeriver().deriveSecret(seed, "m/2'/2'");
-      final decrypted = decrypt(hmacKey, key, data);
+      final decrypted = decrypt(await _encryptionKeyFromSeed(seed), data);
 
       final contents = utf8.decode(decrypted);
 
@@ -78,9 +76,7 @@ class SingleFileSecretRepository extends InMemSecretRepository {
     final items = secrets.map(standardSerializers.serialize).toList();
     final contents = json.encode(items);
 
-    final hmacKey = await SecretDeriver().deriveSecret(seed, "m/2'/1'");
-    final key = await SecretDeriver().deriveSecret(seed, "m/2'/2'");
-    final data = encrypt(null, hmacKey, key, utf8.encode(contents));
+    final data = encrypt(null, await _encryptionKeyFromSeed(seed), utf8.encode(contents));
 
     await file.writeAsBytes(data, flush: true);
   }
@@ -88,5 +84,11 @@ class SingleFileSecretRepository extends InMemSecretRepository {
   Future<void> _deleteStore() async {
     final file = await _getFile();
     await file.delete();
+  }
+
+  Future<EncryptionKey> _encryptionKeyFromSeed(BIP32 seed) async {
+    final hmacKey = await SecretDeriver().deriveSecret(seed, "m/2'/1'");
+    final key = await SecretDeriver().deriveSecret(seed, "m/2'/2'");
+    return EncryptionKey(hmacKey: hmacKey, key: key);
   }
 }

@@ -7,20 +7,19 @@ import 'package:pointycastle/api.dart';
 
 const _FORMAT_VERSION = 0;
 const _IV_LENGTH = 16;
+const _KEY_LEN = 32;
 const _HMAC_LEN = 32;
 
 /// encrypt data with the given IV and key
 /// the returned data includes the IV and an authentication tag which are used in the decrypt function
 /// hmacKey is the key used in HMAC-SHA256, the recommended key size is 64-byte (although a 32-byte full
 /// entropy key should suffice) and must be unrelated to the encryption key
-Uint8List encrypt(Uint8List iv, Uint8List hmacKey, Uint8List key, Uint8List data) {
-  assert(hmacKey != key);
-
+Uint8List encrypt(Uint8List iv, EncryptionKey encryptionKey, Uint8List data) {
   final actualIv = iv ?? generateRandomIV(_IV_LENGTH);
-  final cipher = _getCipher(true, actualIv, key);
+  final cipher = _getCipher(true, actualIv, encryptionKey.key);
 
   final encryptedData = cipher.process(data);
-  final hmac = Hmac(sha256, hmacKey);
+  final hmac = Hmac(sha256, encryptionKey.hmacKey);
 
   final preHmac = [_FORMAT_VERSION] + actualIv + encryptedData;
   final hmacTag = hmac.convert(preHmac).bytes;
@@ -30,7 +29,7 @@ Uint8List encrypt(Uint8List iv, Uint8List hmacKey, Uint8List key, Uint8List data
   return encryptedBlob;
 }
 
-Uint8List decrypt(Uint8List hmacKey, Uint8List key, Uint8List encryptedBlob) {
+Uint8List decrypt(EncryptionKey encryptionKey, Uint8List encryptedBlob) {
   final formatVersion = encryptedBlob[0];
   if (formatVersion != _FORMAT_VERSION) {
     throw Exception('Unsupported format version: $formatVersion');
@@ -41,7 +40,7 @@ Uint8List decrypt(Uint8List hmacKey, Uint8List key, Uint8List encryptedBlob) {
   final encryptedData = encryptedBlob.sublist(_IV_LENGTH + 1, hmacIndex);
   final hmacTag = encryptedBlob.sublist(hmacIndex);
 
-  final hmac = Hmac(sha256, hmacKey);
+  final hmac = Hmac(sha256, encryptionKey.hmacKey);
   final preHmac = [_FORMAT_VERSION] + iv + encryptedData;
   final calculatedHmacTag = hmac.convert(preHmac).bytes;
 
@@ -49,7 +48,7 @@ Uint8List decrypt(Uint8List hmacKey, Uint8List key, Uint8List encryptedBlob) {
     throw Exception('Encrypted data authentication failed');
   }
 
-  final cipher = _getCipher(false, iv, key);
+  final cipher = _getCipher(false, iv, encryptionKey.key);
 
   return cipher.process(encryptedData);
 }
@@ -75,4 +74,16 @@ BlockCipher _getCipher(bool encryption, Uint8List iv, Uint8List key) {
   final cipher = PaddedBlockCipher('AES/CBC/PKCS7');
   cipher.init(encryption, params);
   return cipher;
+}
+
+class EncryptionKey {
+  EncryptionKey({this.hmacKey, this.key}) : assert(!listEquals(hmacKey, key));
+  factory EncryptionKey.split(Uint8List encryptionKey) {
+    final key = encryptionKey.sublist(0, _KEY_LEN);
+    final hmacKey = encryptionKey.sublist(_KEY_LEN);
+    return EncryptionKey(hmacKey: hmacKey, key: key);
+  }
+
+  final Uint8List key;
+  final Uint8List hmacKey;
 }

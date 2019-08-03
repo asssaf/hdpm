@@ -6,7 +6,7 @@ import 'package:hdpm/appstatecontainer.dart';
 import 'package:hdpm/components/app/appbarbuilder.dart';
 import 'package:hdpm/routes.dart';
 import 'package:hdpm/screens/seedinput/components/seedinputform.dart';
-import 'package:hdpm/services/seedencryption.dart';
+import 'package:hdpm/services/encryption.dart';
 import 'package:hdpm/services/seedrepository.dart';
 
 class SeedInputScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class SeedInputScreen extends StatefulWidget {
         super(key: key);
 
   final String title;
-  final Uint8List seedEncryptionKey;
+  final EncryptionKey seedEncryptionKey;
 
   @override
   _SeedInputScreenState createState() => _SeedInputScreenState();
@@ -49,12 +49,13 @@ class _SeedInputScreenState extends State<SeedInputScreen> {
 
   void _save(Uint8List seedBytes, BuildContext context) async {
     // store encrypted seed in SharedPreferences
-    final encryptedSeed = SeedEncryption().encrypt(widget.seedEncryptionKey, seedBytes);
-    SeedRepository().saveSeed(encryptedSeed);
-
-    final seed = BIP32.fromSeed(seedBytes);
 
     try {
+      final encryptedSeed = encrypt(null, widget.seedEncryptionKey, seedBytes);
+      SeedRepository().saveSeed(encryptedSeed);
+
+      final seed = BIP32.fromSeed(seedBytes);
+
       await AppStateContainer.of(context).state.openSecretStore(seed: seed);
 
       Navigator.pushNamedAndRemoveUntil(
