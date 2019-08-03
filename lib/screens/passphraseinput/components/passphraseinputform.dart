@@ -44,6 +44,7 @@ class _PassphraseInputState extends State<PassphraseInputForm> {
                 if (value.isEmpty) {
                   return 'Please enter some text';
                 }
+                return null;
               },
               onSaved: (value) => setState(() => _passphrase = value),
             ),

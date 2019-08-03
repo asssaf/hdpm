@@ -41,6 +41,7 @@ class _PathInputFormState extends State<PathInputForm> {
                   return 'Please enter some text';
                 }
                 //TODO validate bip32 path
+                return null;
               },
               onSaved: (value) => setState(() => _path = value),
             ),

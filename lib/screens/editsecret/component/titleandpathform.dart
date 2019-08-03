@@ -62,6 +62,7 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
                 if (value.isEmpty) {
                   return 'Please enter some text';
                 }
+                return null;
               },
               onSaved: (value) => widget.secretItemBuilder.title = value,
             ),
@@ -70,9 +71,9 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
             title: Text('Autogenerate derivation path'),
             value: !_hasManualPath, //!_secretItem.hasManualPath,
             onChanged: (value) => setState(() {
-                  _hasManualPath = !value;
-                  widget.secretItemBuilder.hasManualPath = !value;
-                }),
+              _hasManualPath = !value;
+              widget.secretItemBuilder.hasManualPath = !value;
+            }),
           ),
           Offstage(
             offstage: _hasManualPath,
@@ -114,6 +115,7 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
             }
             //TODO validate bip32 path
           }
+          return null;
         },
         onSaved: (value) {
           if (widget.secretItem.hasManualPath) {

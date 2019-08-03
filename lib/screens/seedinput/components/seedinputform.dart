@@ -65,6 +65,7 @@ class _SeedInputFormState extends State<SeedInputForm> {
                 if (value.isEmpty) {
                   return 'Please enter some text';
                 }
+                return null;
               },
               onSaved: (value) => setState(() => _mnemonic = value),
             ),
