@@ -81,44 +81,13 @@ class _EditSecretState extends State<EditSecretScreen> {
           ),
         ],
       ),
-      body: WillPopScope(
-        onWillPop: _onWillPop,
-        child: EditSecretForm(
-          formKey: _secretFormKey,
-          seed: widget.seed,
-          secretItem: _secretItemBuilder.build(),
-          secretItemBuilder: _secretItemBuilder,
-        ),
+      body: EditSecretForm(
+        formKey: _secretFormKey,
+        seed: widget.seed,
+        secretItem: _secretItemBuilder.build(),
+        secretItemBuilder: _secretItemBuilder,
       ),
     );
-  }
-
-  Future<bool> _onWillPop() async {
-    final confirmed = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Unsaved Edit'),
-          content: Text('Unsaved entry will be lost. Continue?'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('CANCEL'),
-              onPressed: () {
-                Navigator.pop(context, null);
-              },
-            ),
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            )
-          ],
-        );
-      },
-    );
-
-    return confirmed == true;
   }
 
   void _saveTitleForm() async {

@@ -22,6 +22,8 @@ class EditSecretForm extends StatefulWidget {
 }
 
 class _EditSecretFormState extends State<EditSecretForm> {
+  bool _changed = false;
+
   static const _itemBuilders = <Type, Function>{
     CustomSecretItemField.gtype: _customFieldBuilder,
     DerivedSecretItemField.gtype: _derivedFieldBuilder,
@@ -31,11 +33,52 @@ class _EditSecretFormState extends State<EditSecretForm> {
   Widget build(BuildContext context) {
     return Form(
       key: widget.formKey,
+      onChanged: () => setState(() => _changed = true),
+      onWillPop: _onWillPop,
       child: ListView.builder(
         itemCount: widget.secretItem.fields.length,
         itemBuilder: _itemBuilder(),
       ),
     );
+  }
+
+  Future<bool> _onWillPop() async {
+    if (!_changed) {
+      return true;
+    }
+
+    final confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Unsaved Edit'),
+          content: Text('Unsaved entry will be lost. Continue?'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('CANCEL'),
+              onPressed: () {
+                Navigator.pop(context, null);
+              },
+            ),
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+            )
+          ],
+        );
+      },
+    );
+
+    return confirmed == true;
+  }
+
+  void _fieldChanged(int index, field) {
+    if (widget.secretItem.fields[index] != field) {
+      widget.secretItemBuilder.fields[index] = field;
+      setState(() => _changed = true);
+    }
   }
 
   IndexedWidgetBuilder _itemBuilder() {
@@ -45,7 +88,7 @@ class _EditSecretFormState extends State<EditSecretForm> {
       if (fieldBuilder == null) {
         throw Exception('Unsupported field type: ${field.runtimeType}');
       }
-      return fieldBuilder(widget, field, (field) => widget.secretItemBuilder.fields[index] = field);
+      return fieldBuilder(widget, field, (field) => _fieldChanged(index, field));
     };
   }
 
