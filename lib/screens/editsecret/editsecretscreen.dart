@@ -145,10 +145,11 @@ class _EditSecretState extends State<EditSecretScreen> {
     if (form.validate()) {
       form.save();
 
-      SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
-
       final secretItem = _secretItemBuilder.build();
-      await _secretRepository.save(secretItem);
+      if (secretItem != widget.secretItem) {
+        SecretRepository _secretRepository = AppStateContainer.of(context).state.secretRepository;
+        await _secretRepository.save(secretItem);
+      }
 
       Navigator.pop(context, ScreenResult(message: 'Saved', result: secretItem));
     }
