@@ -69,7 +69,7 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
           ),
           SwitchListTile(
             title: Text('Autogenerate derivation path'),
-            value: !_hasManualPath, //!_secretItem.hasManualPath,
+            value: !_hasManualPath,
             onChanged: (value) => setState(() {
               _hasManualPath = !value;
               widget.secretItemBuilder.hasManualPath = !value;
@@ -118,7 +118,7 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
           return null;
         },
         onSaved: (value) {
-          if (widget.secretItem.hasManualPath) {
+          if (_hasManualPath) {
             widget.secretItemBuilder.path = value;
           }
         },
