@@ -49,12 +49,13 @@ class _PassphraseInputState extends State<PassphraseInputForm> {
               onSaved: (value) => setState(() => _passphrase = value),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-            child: RaisedButton(
-              onPressed: widget.enabled ? _save : null,
-              child: Text('Next'),
-            ),
+          ButtonBar(
+            children: <Widget>[
+              RaisedButton(
+                onPressed: widget.enabled ? _save : null,
+                child: Text('Next'),
+              ),
+            ],
           ),
         ],
       ),

@@ -18,6 +18,24 @@ class _SeedInputFormState extends State<SeedInputForm> {
   final _formKey = GlobalKey<FormState>();
   String _mnemonic;
   bool _processing = false;
+  TextEditingController _mnemonicController;
+
+  @override
+  void initState() {
+    super.initState();
+    _mnemonicController = new TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _mnemonicController.dispose();
+    super.dispose();
+  }
+
+  void _generate() {
+    String generated = bip39.generateMnemonic();
+    _mnemonicController.text = generated;
+  }
 
   void _save() async {
     final form = _formKey.currentState;
@@ -49,12 +67,13 @@ class _SeedInputFormState extends State<SeedInputForm> {
           ListTile(
             title: TextFormField(
               enabled: !_processing,
+              controller: _mnemonicController,
               decoration: InputDecoration(
                 labelText: 'Seed',
                 suffixIcon: IconButton(
                   icon: Icon(Icons.clear),
                   onPressed: () {
-                    _formKey.currentState.reset();
+                    WidgetsBinding.instance.addPostFrameCallback((_) => _mnemonicController.clear());
                   },
                 ),
               ),
@@ -70,12 +89,17 @@ class _SeedInputFormState extends State<SeedInputForm> {
               onSaved: (value) => setState(() => _mnemonic = value),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-            child: RaisedButton(
-              onPressed: _processing ? null : _save,
-              child: Text('Next'),
-            ),
+          ButtonBar(
+            children: <Widget>[
+              RaisedButton(
+                onPressed: _processing ? null : _generate,
+                child: Text('Generate'),
+              ),
+              RaisedButton(
+                onPressed: _processing ? null : _save,
+                child: Text('Next'),
+              ),
+            ],
           ),
         ],
       ),
