@@ -8,6 +8,7 @@ abstract class SecretRepository {
   Future<void> close() async {}
   Observable<List<SecretItem>> findAll();
   Observable<SecretItem> findByPath(String path);
+  Observable<SecretItem> findByTitle(String title);
   Future<bool> save(SecretItem secret);
   Future<bool> delete(SecretItem secret);
 }

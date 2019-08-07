@@ -101,6 +101,20 @@ class _EditSecretState extends State<EditSecretScreen> {
 
       final secretItem = _secretItemBuilder.build();
 
+      final secretRepository = AppStateContainer.of(context).state.secretRepository;
+
+      final secretByTitle = await secretRepository.findByPath(secretItem.title).first;
+      if (secretByTitle != null) {
+        _showError('There is already a secret with this title');
+        return;
+      }
+
+      final secretByPath = await secretRepository.findByPath(secretItem.path).first;
+      if (secretByPath != null) {
+        _showError('Path already in use');
+        return;
+      }
+
       Completer<dynamic> completer = Completer();
       final result = Navigator.pushReplacementNamed(context, Routes.editSecret,
           result: completer.future, arguments: {'seed': widget.seed, 'secretItem': secretItem});
@@ -122,5 +136,25 @@ class _EditSecretState extends State<EditSecretScreen> {
 
       Navigator.pop(context, ScreenResult(message: 'Saved', result: secretItem));
     }
+  }
+
+  void _showError(String message) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Failed to create secret'),
+          content: Text(message),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+            )
+          ],
+        );
+      },
+    );
   }
 }

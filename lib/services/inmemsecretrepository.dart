@@ -17,7 +17,14 @@ class InMemSecretRepository extends SecretRepository {
 
   @override
   Observable<SecretItem> findByPath(String path) {
-    return _secretsSubject.stream.map((secrets) => secrets.firstWhere((secret) => secret.path == path, orElse: null));
+    return _secretsSubject.stream
+        .map((secrets) => secrets.firstWhere((secret) => secret.path == path, orElse: () => null));
+  }
+
+  @override
+  Observable<SecretItem> findByTitle(String title) {
+    return _secretsSubject.stream
+        .map((secrets) => secrets.firstWhere((secret) => secret.title == title, orElse: () => null));
   }
 
   @override
