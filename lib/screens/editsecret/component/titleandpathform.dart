@@ -75,13 +75,12 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
               widget.secretItemBuilder.hasManualPath = !value;
             }),
           ),
-          Offstage(
-            offstage: _hasManualPath,
-            child: _buildAutoDerivationPath(),
-          ),
-          Offstage(
-            offstage: !_hasManualPath,
-            child: _buildManualDerivationPath(),
+          IndexedStack(
+            index: _hasManualPath ? 1 : 0,
+            children: <Widget>[
+              _buildAutoDerivationPath(),
+              _buildManualDerivationPath(),
+            ],
           ),
         ],
       ),
@@ -109,7 +108,7 @@ class _TitleAndPathFormState extends State<TitleAndPathForm> {
         ),
         autofocus: true,
         validator: (value) {
-          if (widget.secretItem.hasManualPath) {
+          if (_hasManualPath) {
             if (value.isEmpty) {
               return 'Please enter some text';
             }
