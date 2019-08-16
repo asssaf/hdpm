@@ -103,7 +103,7 @@ class _EditSecretState extends State<EditSecretScreen> {
 
       final secretRepository = AppStateContainer.of(context).state.secretRepository;
 
-      final secretByTitle = await secretRepository.findByPath(secretItem.title).first;
+      final secretByTitle = await secretRepository.findByTitle(secretItem.title).first;
       if (secretByTitle != null) {
         _showError('There is already a secret with this title');
         return;
